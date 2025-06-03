@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Mode = 'Básica' | 'Científica' | 'Conversor';
 
@@ -8,8 +8,16 @@ const basicButtons = [
   ['7', '8', '9', 'x'],
   ['4', '5', '6', '-'],
   ['1', '2', '3', '+'],
-  ['Home', '0', ',', '='],
+  ['a', '0', ',', '='],
 ];
+
+const orangeButtons = [
+  '=', '+', '-', 'x', '/'
+]
+
+const greyButtons = [
+  'AC', '±', '%'
+]
 
 export default function Calculator() {
   const [display, setDisplay] = useState('');
@@ -39,7 +47,7 @@ export default function Calculator() {
         {row.map((btn) => (
           <TouchableOpacity
             key={btn}
-            style={[styles.button, btn === '=' ? styles.equals : {}]}
+            style={[styles.button,  orangeButtons.includes(btn) ? styles.equals:  greyButtons.includes(btn) ? styles.grey : {}]}
             onPress={() => handlePress(btn)}
           >
             <Text style={styles.buttonText}>{btn}</Text>
@@ -84,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-    paddingTop: 60,
+    paddingTop: 210,
     paddingHorizontal: 10,
   },
   display: {
@@ -113,6 +121,9 @@ const styles = StyleSheet.create({
   equals: {
     backgroundColor: '#f90',
   },
+  grey: {
+    backgroundColor: '#808080',
+  },
   buttonText: {
     fontSize: 32,
     color: 'white',
@@ -128,6 +139,7 @@ const styles = StyleSheet.create({
     color: '#f90',
   },
   modalOverlay: {
+    paddingTop: 95,
     flex: 1,
     justifyContent: 'flex-end',
   },
