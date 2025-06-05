@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CalculatorButtons from './CalculatorButtons';
 import ModeMenuModal from './ModeMenuModal';
+import ScientificButtons from './ScientificButtons';
 import SideDrawer from './SideDrawer';
 
 type Mode = 'Básica' | 'Científica' | 'Notas Matemáticas' | 'Conversor';
@@ -32,7 +33,7 @@ export default function Calculator() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, mode === 'Científica' && styles.scientificContainer]}>
       {/* Display */}
       <View style={styles.display}>
         <Text style={styles.resultText}>{result || display || '0'}</Text>
@@ -43,8 +44,14 @@ export default function Calculator() {
         <Text style={styles.menuText}>≡</Text>
       </TouchableOpacity>
 
-      {/* Buttons */}
+      {/* Botões */}
       {mode === 'Básica' && <CalculatorButtons onPress={handlePress} />}
+      {mode === 'Científica' && (
+        <>
+            <ScientificButtons onPress={handlePress} />
+            <CalculatorButtons onPress={handlePress} isScientific />
+        </>
+       )}
 
       {/* Modal de seleção de modo */}
       <ModeMenuModal
@@ -69,6 +76,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     paddingTop: 210,
     paddingHorizontal: 10,
+  },
+  scientificContainer: {
+    paddingTop: 99,
   },
   display: {
     height: 120,

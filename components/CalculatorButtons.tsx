@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const orangeButtons = ['=', '+', '-', 'x', '/'];
-const greyButtons = ['AC', '±', '%'];
+type Props = {
+  onPress: (value: string) => void;
+  isScientific?: boolean;
+};
 
 const basicButtons = [
   ['AC', '±', '%', '/'],
@@ -13,11 +15,10 @@ const basicButtons = [
   ['menu', '0', ',', '='],
 ];
 
-type Props = {
-  onPress: (button: string) => void;
-};
+const orangeButtons = ['=', '+', '-', 'x', '/'];
+const greyButtons = ['AC', '±', '%'];
 
-export default function CalculatorButtons({ onPress }: Props) {
+export default function CalculatorButtons({ onPress, isScientific = false }: Props) {
   return (
     <>
       {basicButtons.map((row, rowIndex) => (
@@ -27,6 +28,7 @@ export default function CalculatorButtons({ onPress }: Props) {
               key={btn}
               style={[
                 styles.button,
+                isScientific ? styles.scientificButton : {},
                 btn === 'menu'
                   ? styles.menuIconButton
                   : orangeButtons.includes(btn)
@@ -38,9 +40,16 @@ export default function CalculatorButtons({ onPress }: Props) {
               onPress={() => onPress(btn)}
             >
               {btn === 'menu' ? (
-                <Icon name="calculator" size={40} color="#fff" />
+                <Icon name="calculator" size={isScientific ? 24 : 40} color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>{btn}</Text>
+                <Text
+                  style={[
+                    styles.buttonText,
+                    isScientific && styles.scientificButtonText,
+                  ]}
+                >
+                  {btn}
+                </Text>
               )}
             </TouchableOpacity>
           ))}
@@ -54,7 +63,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   button: {
     backgroundColor: '#333',
@@ -63,6 +72,11 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scientificButton: {
+    width: 95,
+    height: 55,
+    borderRadius: 35,
   },
   equals: {
     backgroundColor: '#f90',
@@ -73,6 +87,9 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 32,
     color: 'white',
+  },
+  scientificButtonText: {
+    fontSize: 24,
   },
   menuIconButton: {
     backgroundColor: '#333',
