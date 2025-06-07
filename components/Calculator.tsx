@@ -1,18 +1,56 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useRef, useState } from 'react';
+import HistoryDrawer from './HistoryDrawer';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import CalculatorButtons from './CalculatorButtons';
 import ModeMenuModal from './ModeMenuModal';
 import ScientificButtons from './ScientificButtons';
-import SideDrawer from './SideDrawer';
 
-type Mode = 'Básica' | 'Científica' | 'Notas Matemáticas' | 'Conversor';
+type Mode = 'Básica' | 'Científica' | 'Conversor';
 
 export default function Calculator() {
   const [display, setDisplay] = useState('');
   const [result, setResult] = useState('');
   const [mode, setMode] = useState<Mode>('Básica');
   const [menuVisible, setMenuVisible] = useState(false);
-  const [menuLateralVisible, setMenuLateralVisible] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+
+  const slideAnim = useRef(new Animated.Value(-250)).current;
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      const savedHistory = await AsyncStorage.getItem('calculator_history');
+      if (savedHistory) {
+        setHistory(JSON.parse(savedHistory));
+      }
+    };
+    loadHistory();
+  }, []);
+
+  useEffect(() => {
+    if (historyVisible) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: -250,
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [historyVisible]);
+
+  const addToHistory = async (entry: string) => {
+    const newHistory = [entry, ...history].slice(0, 50);
+    setHistory(newHistory);
+    await AsyncStorage.setItem('calculator_history', JSON.stringify(newHistory));
+  };
 
   const handlePress = (button: string) => {
     if (button === 'menu') {
@@ -23,7 +61,11 @@ export default function Calculator() {
     } else if (button === '=') {
       try {
         const expression = display.replace(/x/g, '*').replace(/,/g, '.');
-        setResult(eval(expression).toString());
+        const resultValue = eval(expression).toString();
+        setResult(resultValue);
+
+        const entry = `${display} = ${resultValue}`;
+        addToHistory(entry);
       } catch {
         setResult('Erro');
       }
@@ -39,8 +81,8 @@ export default function Calculator() {
         <Text style={styles.resultText}>{result || display || '0'}</Text>
       </View>
 
-      {/* ≡ Menu lateral button */}
-      <TouchableOpacity onPress={() => setMenuLateralVisible(true)} style={styles.menuButton}>
+      {/* Botão pra abrir o histórico */}
+      <TouchableOpacity onPress={() => setHistoryVisible(true)} style={styles.menuButton}>
         <Text style={styles.menuText}>≡</Text>
       </TouchableOpacity>
 
@@ -48,23 +90,27 @@ export default function Calculator() {
       {mode === 'Básica' && <CalculatorButtons onPress={handlePress} />}
       {mode === 'Científica' && (
         <>
-            <ScientificButtons onPress={handlePress} />
-            <CalculatorButtons onPress={handlePress} isScientific />
+          <ScientificButtons onPress={handlePress} />
+          <CalculatorButtons onPress={handlePress} isScientific />
         </>
-       )}
+      )}
 
-      {/* Modal de seleção de modo */}
+      {/* Modal de seleção de modo (pop-up que não é pop-up ainda) */}
       <ModeMenuModal
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
         onSelectMode={(m) => setMode(m)}
       />
 
-      {/* Menu lateral */}
-      <SideDrawer
-        visible={menuLateralVisible}
-        onClose={() => setMenuLateralVisible(false)}
-        onSelectMode={(m) => setMode(m)}
+      {/* Histórico de Calculo */}
+     <HistoryDrawer
+        visible={historyVisible}
+        onClose={() => setHistoryVisible(false)}
+        onClear={async () => {
+          await AsyncStorage.removeItem('calculator_history');
+          setHistory([]);
+        }}
+        history={history}
       />
     </View>
   );
@@ -99,5 +145,37 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 30,
     color: '#f90',
+  },
+  lateralOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 100,
+  },
+  drawerMenu: {
+    width: 250,
+    height: '100%',
+    backgroundColor: '#222',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    position: 'absolute',
+  },
+  historyTitle: {
+    fontSize: 22,
+    color: 'white',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  historyList: {
+    flex: 1,
+  },
+  historyItem: {
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 5,
   },
 });

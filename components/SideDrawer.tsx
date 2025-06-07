@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, TouchableOpacity, View, Text, StyleSheet, Easing } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-type Mode = 'Básica' | 'Científica' | 'Notas Matemáticas' | 'Conversor';
+type Mode = 'Básica' | 'Científica' | 'Conversor';
 
 type Props = {
   visible: boolean;
@@ -13,7 +13,6 @@ type Props = {
 const modeIcons: Record<Mode, React.ReactNode> = {
   'Básica': <Icon name="calculator" size={20} color="white" style={{ marginRight: 10 }} />,
   'Científica': <Icon name="function" size={20} color="white" style={{ marginRight: 10 }} />,
-  'Notas Matemáticas': <Icon name="math-integral" size={20} color="white" style={{ marginRight: 10 }} />,
   'Conversor': <Icon name="swap-horizontal" size={20} color="white" style={{ marginRight: 10 }} />,
 };
 
@@ -47,7 +46,7 @@ export default function SideDrawer({ visible, onClose, onSelectMode }: Props) {
       activeOpacity={1}
     >
       <Animated.View style={[styles.drawerMenu, { left: slideAnim }]}>
-        {(['Básica', 'Científica', 'Notas Matemáticas', 'Conversor'] as Mode[]).map((m) => (
+        {(['Básica', 'Científica', 'Conversor'] as Mode[]).map((m) => (
           <TouchableOpacity
             key={m}
             onPress={() => {
