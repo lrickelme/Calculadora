@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import HistoryDrawer from './HistoryDrawer';
-import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { Animated, Easing, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CalculatorButtons from './CalculatorButtons';
 import ModeMenuModal from './ModeMenuModal';
 import ScientificButtons from './ScientificButtons';
@@ -95,7 +95,7 @@ export default function Calculator() {
         </>
       )}
 
-      {/* Modal de seleção de modo (pop-up que não é pop-up ainda) */}
+      {/* Modal de seleção de modo */}
       <ModeMenuModal
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
@@ -103,7 +103,7 @@ export default function Calculator() {
       />
 
       {/* Histórico de Calculo */}
-     <HistoryDrawer
+      <HistoryDrawer
         visible={historyVisible}
         onClose={() => setHistoryVisible(false)}
         onClear={async () => {
@@ -120,11 +120,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-    paddingTop: 210,
+    paddingTop: Platform.OS === 'ios' ? 210 : 160,
     paddingHorizontal: 10,
   },
   scientificContainer: {
-    paddingTop: 99,
+    paddingTop: Platform.OS === 'ios' ? 99 : 60,
   },
   display: {
     height: 120,
@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 60,
     color: 'white',
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : undefined,
   },
   menuButton: {
     position: 'absolute',
@@ -145,37 +146,5 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 30,
     color: '#f90',
-  },
-  lateralOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    zIndex: 100,
-  },
-  drawerMenu: {
-    width: 250,
-    height: '100%',
-    backgroundColor: '#222',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    position: 'absolute',
-  },
-  historyTitle: {
-    fontSize: 22,
-    color: 'white',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  historyList: {
-    flex: 1,
-  },
-  historyItem: {
-    fontSize: 16,
-    color: 'white',
-    marginBottom: 5,
   },
 });

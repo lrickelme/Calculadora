@@ -1,13 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Easing,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, Easing, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform,} from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -37,96 +29,73 @@ export default function HistoryDrawer({ visible, onClose, onClear, history }: Pr
     }
   }, [visible]);
 
-  if (!visible) return null;
-
   return (
-    <TouchableOpacity
-      style={styles.lateralOverlay}
-      onPress={onClose}
-      activeOpacity={1}
-    >
-      <Animated.View
-        style={[styles.drawerMenu, { left: slideAnim }]}
-        onStartShouldSetResponder={() => true}
-      >
-        <Text style={styles.historyTitle}>Últimos 50 cálculos</Text>
-        <ScrollView style={styles.historyList}>
-          {history.slice(0, 50).map((entry, index) => (
-            <View key={index} style={styles.historyItem}>
-              <Text style={styles.historyText}>{entry}</Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Botões Limpar / OK */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-            <Text style={styles.buttonText}>Limpar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} style={styles.okButton}>
-            <Text style={styles.buttonText}>OK</Text>
+    <>
+      {visible && (
+        <TouchableOpacity style={styles.overlay} onPress={onClose} />
+      )}
+      <Animated.View style={[styles.drawer, { left: slideAnim }]}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Histórico</Text>
+          <TouchableOpacity onPress={onClear}>
+            <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {history.length === 0 && <Text style={styles.emptyText}>Sem histórico</Text>}
+          {history.map((item, idx) => (
+            <Text key={idx} style={styles.historyItem}>{item}</Text>
+          ))}
+        </ScrollView>
       </Animated.View>
-    </TouchableOpacity>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  lateralOverlay: {
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#00000080',
+  },
+  drawer: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    zIndex: 100,
-  },
-  drawerMenu: {
     width: 250,
-    height: '100%',
     backgroundColor: '#222',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    position: 'absolute',
+    padding: 20,
   },
-  historyTitle: {
-    fontSize: 22,
-    color: 'white',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  historyList: {
-    flex: 1,
-  },
-  historyItem: {
-    marginBottom: 10,
-  },
-  historyText: {
-    fontSize: 16,
-    color: 'white',
-  },
-  buttonRow: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 15,
+    marginBottom: 20,
+    marginTop: 65,
   },
-  clearButton: {
-    backgroundColor: '#f00',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-  },
-  okButton: {
-    backgroundColor: '#0f0',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
+  title: {
+    fontSize: 22,
     fontWeight: 'bold',
+    color: 'white',
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
+  },
+  clearText: {
+    fontSize: 16,
+    color: '#f90',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  emptyText: {
+    color: '#888',
+    fontStyle: 'italic',
+  },
+  historyItem: {
+    color: 'white',
+    marginBottom: 8,
+    fontSize: 16,
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
   },
 });

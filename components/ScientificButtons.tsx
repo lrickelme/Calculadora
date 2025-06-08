@@ -32,13 +32,13 @@ export default function ScientificButtons({ onPress }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     marginBottom: 6,
-    paddingHorizontal: 3,
+    paddingHorizontal: 1,
   },
   button: {
     backgroundColor: '#1C1C1C',
-    width: 65,
+    width: 55,
     height: 50,
     borderRadius: 30,
     justifyContent: 'center',
@@ -50,4 +50,3 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
