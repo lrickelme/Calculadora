@@ -1,24 +1,35 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import React from "react";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 type Props = {
   onPress: (value: string) => void;
+  onLongPress: () => void;
   isScientific?: boolean;
 };
 
 const basicButtons = [
-  ['AC', '±', '%', '/'],
-  ['7', '8', '9', 'x'],
-  ['4', '5', '6', '-'],
-  ['1', '2', '3', '+'],
-  ['menu', '0', ',', '='],
+  ["AC", "±", "%", "/"],
+  ["7", "8", "9", "x"],
+  ["4", "5", "6", "-"],
+  ["1", "2", "3", "+"],
+  ["menu", "0", ",", "="],
 ];
 
-const orangeButtons = ['=', '+', '-', 'x', '/'];
-const greyButtons = ['AC', '±', '%'];
+const orangeButtons = ["=", "+", "-", "x", "/"];
+const greyButtons = ["AC", "±", "%"];
 
-export default function CalculatorButtons({ onPress, isScientific = false }: Props) {
+export default function CalculatorButtons({
+  onPress,
+  isScientific = false,
+  onLongPress,
+}: Props) {
   return (
     <>
       {basicButtons.map((row, rowIndex) => (
@@ -29,7 +40,7 @@ export default function CalculatorButtons({ onPress, isScientific = false }: Pro
               style={[
                 styles.button,
                 isScientific ? styles.scientificButton : {},
-                btn === 'menu'
+                btn === "menu"
                   ? styles.menuIconButton
                   : orangeButtons.includes(btn)
                   ? styles.equals
@@ -38,9 +49,14 @@ export default function CalculatorButtons({ onPress, isScientific = false }: Pro
                   : {},
               ]}
               onPress={() => onPress(btn)}
+              onLongPress={() => onLongPress()}
             >
-              {btn === 'menu' ? (
-                <Icon name="calculator" size={isScientific ? 24 : 40} color="#fff" />
+              {btn === "menu" ? (
+                <Icon
+                  name="calculator"
+                  size={isScientific ? 24 : 40}
+                  color="#fff"
+                />
               ) : (
                 <Text
                   style={[
@@ -61,20 +77,20 @@ export default function CalculatorButtons({ onPress, isScientific = false }: Pro
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 6,
   },
   button: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     width: 80,
     height: 80,
     borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
@@ -90,19 +106,19 @@ const styles = StyleSheet.create({
     borderRadius: 35,
   },
   equals: {
-    backgroundColor: '#f90',
+    backgroundColor: "#f90",
   },
   grey: {
-    backgroundColor: '#808080',
+    backgroundColor: "#808080",
   },
   buttonText: {
     fontSize: 32,
-    color: 'white',
+    color: "white",
   },
   scientificButtonText: {
     fontSize: 24,
   },
   menuIconButton: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
 });
