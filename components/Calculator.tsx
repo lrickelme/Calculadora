@@ -139,7 +139,7 @@ export default function Calculator({
 
       {/* Botão pra abrir o histórico */}
       <TouchableOpacity
-        onPress={() => setHistoryVisible(true)}
+        onPress={() => setHistoryVisible(prev => !prev)}
         style={styles.menuButton}
       >
         <Text style={styles.menuText}>≡</Text>
