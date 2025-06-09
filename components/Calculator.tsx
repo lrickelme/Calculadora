@@ -31,6 +31,7 @@ export default function Calculator({
   const [menuVisible, setMenuVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [isResultDisplayed, setIsResultDisplayed] = useState(false);
   const router = useRouter();
 
   const slideAnim = useRef(new Animated.Value(-250)).current;
@@ -105,14 +106,15 @@ export default function Calculator({
     } else if (button === "AC") {
       setDisplay("");
       setResult("");
+      setIsResultDisplayed(false);
     } else if (button === "=") {
       try {
         const expression = display.replace(/x/g, "*").replace(/,/g, ".");
         const resultValue = eval(expression).toString();
         setResult(resultValue);
-
         const entry = `${display} = ${resultValue}`;
         addToHistory(entry);
+        setIsResultDisplayed(true);
       } catch {
         if (display + button === valueActive) {
           handleValueActive();
@@ -121,7 +123,17 @@ export default function Calculator({
         }
       }
     } else {
-      setDisplay(display + button);
+      if (isResultDisplayed) {
+        if (["+", "-", "*", "/", "x"].includes(button)) {
+          setDisplay(result + button);
+        } else {
+          setDisplay(button);
+          setResult("");
+        }
+        setIsResultDisplayed(false);
+      } else {
+        setDisplay(display + button);
+      }
     }
   };
 
@@ -134,12 +146,14 @@ export default function Calculator({
     >
       {/* Display */}
       <View style={styles.display}>
-        <Text style={styles.resultText}>{result || display || "0"}</Text>
+        <Text style={styles.resultText}>
+          {isResultDisplayed ? result : display || "0"}
+        </Text>
       </View>
 
       {/* Botão pra abrir o histórico */}
       <TouchableOpacity
-        onPress={() => setHistoryVisible(true)}
+        onPress={() => setHistoryVisible(prev => !prev)}
         style={styles.menuButton}
       >
         <Text style={styles.menuText}>≡</Text>
