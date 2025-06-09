@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { ContextApiApp } from "@/hooks/contexAPI";
+import { getPosition } from "@/utils/utils";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { useNavigation } from "expo-router";
@@ -49,14 +50,16 @@ export default function Page() {
     await Haptics.selectionAsync();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const position = await getPosition();
     if (tipo && descricao && urgencia) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       context?.addReport({
         tipo,
         descricao,
         urgencia,
+        posicao: position,
         arquivo,
       });
       navigate.goBack();

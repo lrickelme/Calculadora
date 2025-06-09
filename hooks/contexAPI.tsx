@@ -2,10 +2,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import React, { createContext, useEffect, useMemo } from "react";
 
+interface IPosition {
+  latitude: number;
+  longitude: number;
+  timestamp: number;
+}
+
 interface IReport {
   tipo: string;
   descricao: string;
   urgencia: string;
+  posicao: IPosition;
   arquivo: DocumentPicker.DocumentPickerResult | null;
 }
 

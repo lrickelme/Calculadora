@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   Vibration,
   View,
 } from "react-native";
@@ -33,6 +34,7 @@ export default function Calculator({
   const [history, setHistory] = useState<string[]>([]);
   const [isResultDisplayed, setIsResultDisplayed] = useState(false);
   const router = useRouter();
+  const { height, width } = useWindowDimensions();
 
   const slideAnim = useRef(new Animated.Value(-250)).current;
 
@@ -140,12 +142,15 @@ export default function Calculator({
   return (
     <View
       style={[
-        styles.container,
+        {
+          height: height * 0.7,
+          width: width - 20,
+        },
         mode === "Científica" && styles.scientificContainer,
       ]}
     >
       {/* Display */}
-      <View style={styles.display}>
+      <View style={[styles.display, { height: height * 0.09 }]}>
         <Text style={styles.resultText}>
           {isResultDisplayed ? result : display || "0"}
         </Text>
@@ -153,7 +158,7 @@ export default function Calculator({
 
       {/* Botão pra abrir o histórico */}
       <TouchableOpacity
-        onPress={() => setHistoryVisible(prev => !prev)}
+        onPress={() => setHistoryVisible((prev) => !prev)}
         style={styles.menuButton}
       >
         <Text style={styles.menuText}>≡</Text>
@@ -199,17 +204,10 @@ export default function Calculator({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-    paddingTop: Platform.OS === "ios" ? 210 : 160,
-    paddingHorizontal: 10,
-  },
   scientificContainer: {
     paddingTop: Platform.OS === "ios" ? 99 : 60,
   },
   display: {
-    height: 120,
     justifyContent: "flex-end",
     alignItems: "flex-end",
     marginBottom: 20,
@@ -221,7 +219,7 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 50,
+    top: 0,
     left: 20,
     zIndex: 10,
   },
