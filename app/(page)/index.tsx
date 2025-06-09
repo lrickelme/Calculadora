@@ -17,10 +17,11 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
+import { ContextApiApp } from "@/hooks/contexAPI";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { useNavigation } from "expo-router";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -40,6 +41,7 @@ export default function Page() {
   const [isTextValid, setIsTextValid] = useState(true);
   const [isSelectValidTipo, setIsSelectValidTipo] = useState(true);
   const [isSelectValidUrgencia, setIsSelectValidUrgencia] = useState(true);
+  const context = useContext(ContextApiApp);
 
   const handleUpload = async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: "*/*" });
@@ -51,6 +53,13 @@ export default function Page() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (tipo && descricao && urgencia) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      context?.addReport({
+        tipo,
+        descricao,
+        urgencia,
+        arquivo,
+      });
+      navigate.goBack();
     }
     if (!tipo) {
       setIsSelectValidTipo(false);
@@ -176,10 +185,6 @@ export default function Page() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit}>
-        <Text style={styles.primaryButtonText}>Enviar</Text>
-      </TouchableOpacity>
-
       <View style={[styles.footer, { width: width, height: height * 0.08 }]}>
         <View style={styles.box}>
           <TouchableOpacity
@@ -202,9 +207,9 @@ export default function Page() {
               styles.emergencyButton,
               { width: width / 2 - 16 },
             ]}
-            onPress={() => console.log("EMERGÊNCIA")}
+            onPress={handleSubmit}
           >
-            <Text style={styles.emergencyButtonText}>EMERGÊNCIA</Text>
+            <Text style={styles.emergencyButtonText}>Enviar</Text>
           </TouchableOpacity>
         </View>
       </View>
