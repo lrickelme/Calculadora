@@ -5,13 +5,14 @@ import { DeviceMotion } from "expo-sensors";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
   Easing,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   Vibration,
-  View,
+  View
 } from "react-native";
 import CalculatorButtons from "./CalculatorButtons";
 import HistoryDrawer from "./HistoryDrawer";
@@ -19,7 +20,7 @@ import ModeMenuModal from "./ModeMenuModal";
 import ScientificButtons from "./ScientificButtons";
 
 type Mode = "Básica" | "Científica" | "Conversor";
-
+const { width, height } = Dimensions.get('window');
 export default function Calculator({
   valueActive,
 }: {
@@ -33,7 +34,6 @@ export default function Calculator({
   const [history, setHistory] = useState<string[]>([]);
   const [isResultDisplayed, setIsResultDisplayed] = useState(false);
   const router = useRouter();
-
   const slideAnim = useRef(new Animated.Value(-250)).current;
 
   useEffect(() => {
@@ -202,31 +202,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
-    paddingTop: Platform.OS === "ios" ? 210 : 160,
-    paddingHorizontal: 10,
+    paddingTop: Platform.OS === "ios" ? height * 0.25 : height * 0.18,
+    paddingHorizontal: width * 0.025,
   },
   scientificContainer: {
-    paddingTop: Platform.OS === "ios" ? 99 : 60,
+    paddingTop: Platform.OS === "ios" ? height * 0.12 : height * 0.08,
   },
   display: {
-    height: 120,
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-    marginBottom: 20,
+  height: height * 0.15,
+  justifyContent: "flex-end",
+  alignItems: "flex-end",
+  marginBottom: height * 0.025,
   },
   resultText: {
-    fontSize: 60,
+    fontSize: width * 0.15,
     color: "white",
     fontFamily: Platform.OS === "ios" ? "SF Pro Text" : undefined,
   },
   menuButton: {
     position: "absolute",
-    top: 50,
-    left: 20,
+    top: height * 0.06,
+    left: width * 0.05,
     zIndex: 10,
   },
   menuText: {
-    fontSize: 30,
+    fontSize: width * 0.075,
     color: "#f90",
   },
 });

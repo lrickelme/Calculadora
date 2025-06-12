@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { Dimensions, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Mode = 'Básica' | 'Científica' | 'Conversor';
@@ -15,6 +15,7 @@ const modeIcons: Record<Mode, React.ReactNode> = {
   'Científica': <Icon name="function" size={20} color="white" style={{ marginRight: 10 }} />,
   'Conversor': <Icon name="swap-horizontal" size={20} color="white" style={{ marginRight: 10 }} />,
 };
+const { width, height } = Dimensions.get('window');
 
 export default function ModeMenuModal({ visible, onClose, onSelectMode }: Props) {
   return (
@@ -39,22 +40,25 @@ export default function ModeMenuModal({ visible, onClose, onSelectMode }: Props)
 
 const styles = StyleSheet.create({
   modalOverlay: {
-    paddingTop: 95,
+    paddingTop: height * 0.1,
     flex: 1,
     justifyContent: 'flex-end',
   },
   menuModal: {
     backgroundColor: '#222',
-    padding: 20,
+    padding: width * 0.05,
+    borderTopLeftRadius: width * 0.05,
+    borderTopRightRadius: width * 0.05,
   },
   menuItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: height * 0.02,
   },
   menuItem: {
-    fontSize: 20,
+    fontSize: width * 0.05,
     color: 'white',
     fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
   },
 });
+
