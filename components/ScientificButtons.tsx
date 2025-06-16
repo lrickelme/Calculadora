@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 type Props = {
   onPress: (value: string) => void;
@@ -33,20 +35,20 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 6,
-    paddingHorizontal: 1,
+    marginBottom: height * 0.007,
+    paddingHorizontal: width * 0.01,
   },
   button: {
     backgroundColor: '#1C1C1C',
-    width: 55,
-    height: 50,
-    borderRadius: 30,
+    width: width * 0.14,
+    height: height * 0.06,
+    borderRadius: width * 0.075,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 2,
+    marginHorizontal: width * 0.005,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: 'white',
   },
 });

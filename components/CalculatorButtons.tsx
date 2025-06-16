@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -24,6 +25,7 @@ const basicButtons = [
 
 const orangeButtons = ["=", "+", "-", "x", "/"];
 const greyButtons = ["AC", "±", "%"];
+const { width, height } = Dimensions.get('window');
 
 export default function CalculatorButtons({
   onPress,
@@ -79,13 +81,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: height * 0.01,
   },
   button: {
     backgroundColor: "#333",
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: width * 0.2,
+    height: width * 0.2,
+    borderRadius: (width * 0.2) / 2,
     justifyContent: "center",
     alignItems: "center",
     ...Platform.select({
@@ -101,9 +103,9 @@ const styles = StyleSheet.create({
     }),
   },
   scientificButton: {
-    width: 95,
-    height: 53,
-    borderRadius: 35,
+    width: width * 0.23,
+    height: height * 0.065,
+    borderRadius: width * 0.17,
   },
   equals: {
     backgroundColor: "#f90",
@@ -112,11 +114,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#808080",
   },
   buttonText: {
-    fontSize: 32,
+    fontSize: width * 0.08,
     color: "white",
   },
   scientificButtonText: {
-    fontSize: 24,
+    fontSize: width * 0.06,
   },
   menuIconButton: {
     backgroundColor: "#333",
