@@ -47,7 +47,7 @@ type Incident = {
 };
 
 function nameToType(name: string) {
-  switch (name) {
+  switch (name.trim().toLowerCase()) {
     case "fisica":
       return "Violência física";
     case "assedio-moral":
@@ -62,7 +62,7 @@ function nameToType(name: string) {
 }
 
 function nameToLevel(name: string) {
-  switch (name) {
+  switch (name.trim().toLowerCase()) {
     case "critica":
       return Level.CRITICAL;
     case "alta":
