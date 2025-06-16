@@ -21,9 +21,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 enum Level {
   ALL = "Todos",
-  CRITICAL = "Críticos",
-  HIGH = "Altos",
-  MEDIUM = "Médios",
+  CRITICAL = "Crítica",
+  HIGH = "Alta",
+  MEDIUM = "Média",
+  LOW = "Baixa",
 }
 
 enum Status {
@@ -44,6 +45,36 @@ type Incident = {
   };
   files: DocumentPicker.DocumentPickerResult;
 };
+
+function nameToType(name: string) {
+  switch (name) {
+    case "fisica":
+      return "Violência física";
+    case "assedio-moral":
+      return "Assédio moral";
+    case "assedio-sexual":
+      return "Assédio sexual";
+    case "negligencia":
+      return "Negligência";
+    default:
+      return "Outro";
+  }
+}
+
+function nameToLevel(name: string) {
+  switch (name) {
+    case "critica":
+      return Level.CRITICAL;
+    case "alta":
+      return Level.HIGH;
+    case "media":
+      return Level.MEDIUM;
+    case "baixa":
+      return Level.LOW;
+    default:
+      throw new Error("Level não existe");
+  }
+}
 
 export default function AdminDashboard() {
   const STORAGE_KEY = "@app/reports";
@@ -74,9 +105,9 @@ export default function AdminDashboard() {
           }[] = JSON.parse(storaged);
           const converted = parsed.map<Incident>((prev, index) => ({
             id: `${index}`,
-            level: Level.CRITICAL,
+            level: nameToLevel(prev.urgencies),
             status: Status.PENDING,
-            type: prev.type,
+            type: nameToType(prev.type),
             timestamp: new Date(prev.position.timestamp),
             description: prev.description,
             position: {
