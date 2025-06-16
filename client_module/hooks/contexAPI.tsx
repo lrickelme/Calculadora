@@ -9,11 +9,11 @@ interface IPosition {
 }
 
 interface IReport {
-  tipo: string;
-  descricao: string;
-  urgencia: string;
-  posicao: IPosition;
-  arquivo: DocumentPicker.DocumentPickerResult | null;
+  type: string;
+  description: string;
+  urgencies: string;
+  position: IPosition;
+  file: DocumentPicker.DocumentPickerResult | null;
 }
 
 interface ContextApiProps {

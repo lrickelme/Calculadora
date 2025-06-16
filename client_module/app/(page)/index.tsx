@@ -56,11 +56,11 @@ export default function Page() {
     if (tipo && descricao && urgencia) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       context?.addReport({
-        tipo,
-        descricao,
-        urgencia,
-        posicao: position,
-        arquivo,
+        type: tipo,
+        description: descricao,
+        urgencies: urgencia,
+        position: position,
+        file: arquivo,
       });
       navigate.goBack();
     }
