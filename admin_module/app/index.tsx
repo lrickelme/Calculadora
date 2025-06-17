@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/drawer";
 import { Image } from "@/components/ui/image";
 import { Heading } from "@/components/ui/heading";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StorageAccessFramework } from "expo-file-system";
 
 enum Level {
   ALL = "Todos",
@@ -47,6 +47,8 @@ type Incident = {
 };
 
 function nameToType(name: string) {
+  if (!name) return "Outro";
+
   switch (name.trim().toLowerCase()) {
     case "fisica":
       return "Violência física";
@@ -77,8 +79,7 @@ function nameToLevel(name: string) {
 }
 
 export default function Index() {
-  const STORAGE_KEY = "@app/reports";
-
+  const FILE_NAME = "reports.json";
   const [incidentData, setIncidentData] = useState<Incident[]>([]);
   const [filterLevel, setFilterLevel] = useState<Level>(Level.ALL);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -87,42 +88,64 @@ export default function Index() {
   );
   const mapRef = useRef<MapView>(null);
 
-  useEffect(() => {
-    const loadState = async () => {
-      try {
-        const storaged = await AsyncStorage.getItem(STORAGE_KEY);
-        if (storaged) {
-          const parsed: {
-            type: string;
-            description: string;
-            urgencies: string;
-            position: {
-              latitude: number;
-              longitude: number;
-              timestamp: string;
-            };
-            file: DocumentPicker.DocumentPickerResult;
-          }[] = JSON.parse(storaged);
-          const converted = parsed.map<Incident>((prev, index) => ({
-            id: `${index}`,
-            level: nameToLevel(prev.urgencies),
-            status: Status.PENDING,
-            type: nameToType(prev.type),
-            timestamp: new Date(prev.position.timestamp),
-            description: prev.description,
-            position: {
-              latitude: prev.position.latitude,
-              longitude: prev.position.longitude,
-            },
-            files: prev.file,
-          }));
+  const requestDirectoryPermissions = async () => {
+    const permissions =
+      await StorageAccessFramework.requestDirectoryPermissionsAsync();
+    if (permissions.granted) {
+      return permissions.directoryUri;
+    } else {
+      console.warn("Permissão de diretório negada.");
+      return null;
+    }
+  };
 
-          setIncidentData(converted);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar estado:", error);
+  const loadState = async () => {
+    try {
+      const uri = await requestDirectoryPermissions();
+      if (!uri) return;
+
+      const files = await StorageAccessFramework.readDirectoryAsync(uri);
+      const fileUri = files.find((file) => file.endsWith(FILE_NAME));
+
+      if (fileUri) {
+        const content = await StorageAccessFramework.readAsStringAsync(fileUri);
+
+        const parsed: {
+          type: string;
+          description: string;
+          urgencies: string;
+          position: {
+            latitude: number;
+            longitude: number;
+            timestamp: string;
+          };
+          file: DocumentPicker.DocumentPickerResult;
+        }[] = JSON.parse(content);
+        const converted = parsed.map<Incident>((prev, index) => ({
+          id: `${index}`,
+          level: nameToLevel(prev.urgencies),
+          status: Status.PENDING,
+          type: nameToType(prev.type),
+          timestamp: new Date(prev.position.timestamp),
+          description: prev.description,
+          position: {
+            latitude: prev.position.latitude,
+            longitude: prev.position.longitude,
+          },
+          files: prev.file,
+        }));
+
+        setIncidentData(converted);
+        console.log("Dados carregados:", parsed);
+      } else {
+        console.log("Nenhum arquivo encontrado, iniciando vazio.");
       }
-    };
+    } catch (error) {
+      console.error("Erro ao carregar arquivo:", error);
+    }
+  };
+
+  useEffect(() => {
     loadState();
   }, []);
 
@@ -231,6 +254,7 @@ export default function Index() {
           </Pressable>
         )}
       />
+
       <Drawer
         isOpen={showDrawer}
         size="lg"
@@ -283,11 +307,6 @@ export default function Index() {
               </DrawerBody>
               <DrawerFooter>
                 <HStack space="sm">
-                  {/* <Pressable className="flex-1 px-4 py-2 bg-blue-600 rounded-lg"> */}
-                  {/*   <Text className="text-white text-center font-semibold"> */}
-                  {/*     Chat */}
-                  {/*   </Text> */}
-                  {/* </Pressable> */}
                   <Pressable
                     className="flex-1 px-4 py-2 bg-gray-300 rounded-lg"
                     onPress={() => {

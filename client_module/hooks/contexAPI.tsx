@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
-import React, { createContext, useEffect, useMemo } from "react";
+import { EncodingType, StorageAccessFramework } from "expo-file-system";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 
 interface IPosition {
   latitude: number;
@@ -21,42 +21,86 @@ interface ContextApiProps {
 }
 
 export const ContextApiApp = createContext<ContextApiProps | undefined>(
-  undefined
+  undefined,
 );
 
 export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [reports, setReports] = React.useState<IReport[]>([]);
-  const STORAGE_KEY = "@app/reports";
+  const [reports, setReports] = useState<IReport[]>([]);
+  const [directoryUri, setDirectoryUri] = useState<string | null>(null);
+  const fileName = "reports.json";
+
+  const requestDirectoryPermissions = async () => {
+    const permissions =
+      await StorageAccessFramework.requestDirectoryPermissionsAsync();
+    if (permissions.granted) {
+      setDirectoryUri(permissions.directoryUri);
+      return permissions.directoryUri;
+    } else {
+      console.warn("Permissão de diretório negada.");
+      return null;
+    }
+  };
+
+  const saveState = async () => {
+    try {
+      if (!directoryUri) {
+        const uri = await requestDirectoryPermissions();
+        if (!uri) return;
+      }
+
+      const fileUri = await StorageAccessFramework.createFileAsync(
+        directoryUri!,
+        fileName,
+        "application/json",
+      );
+
+      await StorageAccessFramework.writeAsStringAsync(
+        fileUri,
+        JSON.stringify(reports),
+        {
+          encoding: EncodingType.UTF8,
+        },
+      );
+
+      console.log("Arquivo salvo em:", fileUri);
+    } catch (error) {
+      console.error("Erro ao salvar arquivo:", error);
+    }
+  };
+
+  const loadState = async () => {
+    try {
+      const uri = await requestDirectoryPermissions();
+      if (!uri) return;
+
+      const files = await StorageAccessFramework.readDirectoryAsync(uri);
+      const fileUri = files.find((file) => file.endsWith(fileName));
+
+      if (fileUri) {
+        const content = await StorageAccessFramework.readAsStringAsync(fileUri);
+
+        const parsed = JSON.parse(content);
+
+        setReports(parsed);
+        console.log("Dados carregados:", parsed);
+      } else {
+        console.log("Nenhum arquivo encontrado, iniciando vazio.");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar arquivo:", error);
+    }
+  };
 
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const estadoSalvo = await AsyncStorage.getItem(STORAGE_KEY);
-        if (estadoSalvo) {
-          const parsed = JSON.parse(estadoSalvo);
-          setReports(parsed);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar estado:", error);
-      }
-    };
     loadState();
   }, []);
 
   useEffect(() => {
-    const saveState = async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
-        const estadoSalvo = await AsyncStorage.getItem(STORAGE_KEY);
-        console.log(estadoSalvo);
-      } catch (error) {
-        console.error("Erro ao salvar estado:", error);
-      }
-    };
-
-    saveState();
+    if (reports.length > 0) {
+      saveState();
+    }
   }, [reports]);
 
   const addReport = (report: IReport) => {
@@ -67,7 +111,7 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
     () => ({
       addReport,
     }),
-    []
+    [],
   );
 
   return (
