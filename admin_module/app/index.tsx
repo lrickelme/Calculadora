@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useRef, useState } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
 import { Box } from "@/components/ui/box";
@@ -80,6 +81,7 @@ function nameToLevel(name: string) {
 
 export default function Index() {
   const FILE_NAME = "reports.json";
+  const [directoryUri, setDirectoryUri] = useState<string | null>(null);
   const [incidentData, setIncidentData] = useState<Incident[]>([]);
   const [filterLevel, setFilterLevel] = useState<Level>(Level.ALL);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -99,9 +101,19 @@ export default function Index() {
     }
   };
 
+  const getDirectoryUri = async () => {
+    if (directoryUri) return directoryUri;
+    const uri = await AsyncStorage.getItem("directoryUri");
+    if (uri) {
+      setDirectoryUri(uri);
+      return uri;
+    }
+    return await requestDirectoryPermissions();
+  };
+
   const loadState = async () => {
     try {
-      const uri = await requestDirectoryPermissions();
+      const uri = await getDirectoryUri();
       if (!uri) return;
 
       const files = await StorageAccessFramework.readDirectoryAsync(uri);
@@ -282,7 +294,7 @@ export default function Index() {
                   Nível de urgência: {selected.level}
                 </Text>
                 <Text className="mb-2">Descrição: {selected.description}</Text>
-                {selected.files.assets && (
+                {selected.files && selected.files.assets && (
                   <>
                     <Text className="font-semibold mb-1">
                       Arquivos enviados:

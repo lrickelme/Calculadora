@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { EncodingType, StorageAccessFramework } from "expo-file-system";
 import React, { createContext, useEffect, useMemo, useState } from "react";
@@ -36,6 +37,7 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
       await StorageAccessFramework.requestDirectoryPermissionsAsync();
     if (permissions.granted) {
       setDirectoryUri(permissions.directoryUri);
+      await AsyncStorage.setItem("directoryUri", permissions.directoryUri);
       return permissions.directoryUri;
     } else {
       console.warn("Permissão de diretório negada.");
@@ -43,18 +45,33 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const getDirectoryUri = async () => {
+    if (directoryUri) return directoryUri;
+    const uri = await AsyncStorage.getItem("directoryUri");
+    if (uri) {
+      setDirectoryUri(uri);
+      return uri;
+    }
+    return await requestDirectoryPermissions();
+  };
+
   const saveState = async () => {
     try {
-      if (!directoryUri) {
-        const uri = await requestDirectoryPermissions();
-        if (!uri) return;
-      }
+      const uri = await getDirectoryUri();
+      if (!uri) return;
 
-      const fileUri = await StorageAccessFramework.createFileAsync(
-        directoryUri!,
-        fileName,
-        "application/json",
-      );
+      const files = await StorageAccessFramework.readDirectoryAsync(uri);
+      const existingFileUri = files.find((file) => file.endsWith(fileName));
+
+      let fileUri = existingFileUri;
+
+      if (!fileUri) {
+        fileUri = await StorageAccessFramework.createFileAsync(
+          uri,
+          fileName,
+          "application/json",
+        );
+      }
 
       await StorageAccessFramework.writeAsStringAsync(
         fileUri,
@@ -72,7 +89,7 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadState = async () => {
     try {
-      const uri = await requestDirectoryPermissions();
+      const uri = await getDirectoryUri();
       if (!uri) return;
 
       const files = await StorageAccessFramework.readDirectoryAsync(uri);
