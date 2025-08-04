@@ -29,7 +29,26 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  Platform,
+  Alert,
 } from "react-native";
+
+const API_URL = "http://10.12.130.72:1337";
+
+const position = {
+  coords: {
+    latitude: -22.9068,
+    longitude: -43.1729,
+    accuracy: 10,
+    altitude: null,
+    altitudeAccuracy: null,
+    heading: null,
+    speed: null,
+  },
+  timestamp: Date.now(),
+};
+
+console.log("Usando posição fixa (modo teste):", position);
 
 export default function Page() {
   const navigate = useNavigation();
@@ -45,33 +64,85 @@ export default function Page() {
   const context = useContext(ContextApiApp);
 
   const handleUpload = async () => {
-    const result = await DocumentPicker.getDocumentAsync({ type: "*/*" });
-    if (result.assets && result.assets.length > 0) setArquivo(result);
-    await Haptics.selectionAsync();
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: "*/*" });
+      console.log("Arquivo selecionado:", result);
+      if (result.assets && result.assets.length > 0) {
+        setArquivo(result);
+        await Haptics.selectionAsync();
+      }
+    } catch (error) {
+      console.error("Erro ao selecionar arquivo:", error);
+    }
   };
 
   const handleSubmit = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const position = await getPosition();
-    if (tipo && descricao && urgencia) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      context?.addReport({
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      console.log("Iniciando envio do formulário...");
+
+      if (!tipo || !descricao || !urgencia) {
+        setIsSelectValidTipo(!!tipo);
+        setIsSelectValidUrgencia(!!urgencia);
+        setIsTextValid(!!descricao);
+        Alert.alert("Erro", "Preencha todos os campos obrigatórios");
+        return;
+      }
+
+      // para o strapi
+      const reportData = {
         type: tipo,
         description: descricao,
-        urgencies: urgencia,
-        position: position,
-        file: arquivo,
+        urgency: urgencia,
+        position: position.coords
+          ? {
+              type: "Point",
+              coordinates: [
+                position.coords.longitude,
+                position.coords.latitude,
+              ],
+            }
+          : null,
+        report_time: new Date().toISOString(),
+        denunciation_status: "Aguardando Resposta",
+      };
+
+      const formData = JSON.stringify({
+        data: {
+          type: reportData.type,
+          description: reportData.description,
+          urgency: reportData.urgency,
+        },
       });
-      navigate.goBack();
-    }
-    if (!tipo) {
-      setIsSelectValidTipo(false);
-    }
-    if (!urgencia) {
-      setIsSelectValidUrgencia(false);
-    }
-    if (!descricao) {
-      setIsTextValid(false);
+
+      console.log(formData);
+
+      console.log("Enviando dados para o servidor...");
+      const response = await fetch(`${API_URL}/api/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log("Resposta do servidor:", data);
+
+      if (response.ok) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Sucesso", "Denúncia enviada com sucesso!");
+        navigate.goBack();
+      } else {
+        console.error("Erro na resposta:", data);
+        Alert.alert("Erro", data.error?.message || "Falha ao enviar denúncia");
+      }
+    } catch (error) {
+      console.error("Erro no envio:", error);
+      Alert.alert(
+        "Erro",
+        error.message || "Ocorreu um erro ao enviar a denúncia"
+      );
     }
   };
 
@@ -222,16 +293,16 @@ export default function Page() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // ocupa toda a tela
-    backgroundColor: "#000000", // Fundo preto :contentReference[oaicite:2]{index=2}
-    alignItems: "center", // centraliza horizontalmente
-    justifyContent: "center", // centraliza verticalmente
+    flex: 1,
+    backgroundColor: "#000000",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
   },
   title: {
-    fontSize: 36, // entre 32–40px
-    fontWeight: "700", // Bold para ênfase
-    color: "#FFFFFF", // Texto Claro
+    fontSize: 36,
+    fontWeight: "700",
+    color: "#FFFFFF",
     marginBottom: 24,
   },
   formControl: {
@@ -239,26 +310,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 16, // Corpo do texto
+    fontSize: 16,
     fontWeight: "400",
-    color: "#D4D4D2", // Texto neutro secundário
+    color: "#D4D4D2",
     marginBottom: 8,
   },
   select: {
-    backgroundColor: "#000000", // Secundária
+    backgroundColor: "#000000",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: "#D4D4D2", // Texto neutro secundário
+    color: "#D4D4D2",
     fontSize: 16,
   },
   input: {
-    backgroundColor: "#000000", // Secundária
+    backgroundColor: "#000000",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 12,
-    color: "#ffff", // Texto Escuro
+    color: "#ffff",
   },
   textArea: {
     minHeight: 50,
@@ -266,8 +337,8 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     width: "100%",
-    backgroundColor: "#505050", // Cinza Escuro
-    borderRadius: 24, // Borda arredondada
+    backgroundColor: "#505050",
+    borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -275,23 +346,22 @@ const styles = StyleSheet.create({
   },
   uploadButtonText: {
     fontSize: 16,
-    color: "#FFFFFF", // Texto Claro
+    color: "#FFFFFF",
   },
   primaryButton: {
     width: "100%",
-    backgroundColor: "#FF9500", // Primária
+    backgroundColor: "#FF9500",
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 24,
-    // sombra opcional
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 3, // Android
+    elevation: 3,
   },
   primaryButtonText: {
     fontSize: 18,
@@ -311,31 +381,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
   },
-
   buttonFooter: {
     flex: 1,
     marginHorizontal: 8,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 0, // altura controlada pelo footer
+    paddingVertical: 0,
     paddingHorizontal: 20,
     borderRadius: 24,
   },
-
   neutralButton: {
-    backgroundColor: "#505050", // Cinza Escuro
+    backgroundColor: "#505050",
   },
   neutralButtonText: {
-    color: "#FFFFFF", // Texto Claro
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },
-
   emergencyButton: {
-    backgroundColor: "#FF9500", // Primária
+    backgroundColor: "#FF9500",
   },
   emergencyButtonText: {
-    color: "#FFFFFF", // Texto Claro
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },

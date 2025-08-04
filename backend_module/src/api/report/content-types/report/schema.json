@@ -1,0 +1,78 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reports",
+  "info": {
+    "singularName": "report",
+    "pluralName": "reports",
+    "displayName": "Report"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "position": {
+      "type": "customField",
+      "customField": "plugin::geodata.geojson",
+      "options": {
+        "info": true
+      }
+    },
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Violência física",
+        "Assédio moral",
+        "Assédio sexual",
+        "Negligência",
+        "Outro",
+        "fisica",
+        "moral",
+        "sexual",
+        "negligencia",
+        "outro"
+      ]
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "urgency": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Baixa",
+        "Média",
+        "Alta",
+        "Crítica",
+        "baixa",
+        "media",
+        "alta",
+        "critica"
+      ]
+    },
+    "denunciation_status": {
+      "type": "enumeration",
+      "required": false,
+      "enum": [
+        "Aguardando Resposta",
+        "Instruções Enviadas"
+      ]
+    },
+    "files": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "report_time": {
+      "type": "datetime",
+      "required": false
+    }
+  }
+}

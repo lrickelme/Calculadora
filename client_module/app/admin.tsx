@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/drawer";
 import { Image } from "@/components/ui/image";
 import { Heading } from "@/components/ui/heading";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ContextApiApp } from "@/hooks/contexAPI";
+
+const API_URL = "http://10.12.130.72:1337";
 
 enum Level {
   ALL = "Todos",
@@ -43,7 +45,14 @@ type Incident = {
     latitude: number;
     longitude: number;
   };
-  files: DocumentPicker.DocumentPickerResult;
+  files: {
+    assets: Array<{
+      uri: string;
+      name?: string;
+      mimeType?: string;
+    }>;
+    canceled: boolean;
+  };
 };
 
 function nameToType(name: string) {
@@ -77,57 +86,53 @@ function nameToLevel(name: string) {
 }
 
 export default function AdminDashboard() {
-  const STORAGE_KEY = "@app/reports";
-
+  const context = useContext(ContextApiApp);
   const [incidentData, setIncidentData] = useState<Incident[]>([]);
   const [filterLevel, setFilterLevel] = useState<Level>(Level.ALL);
   const [showDrawer, setShowDrawer] = useState(false);
   const [selected, setSelected] = useState<(typeof incidentData)[0] | null>(
-    null,
+    null
   );
   const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const storaged = await AsyncStorage.getItem(STORAGE_KEY);
-        if (storaged) {
-          const parsed: {
-            type: string;
-            description: string;
-            urgencies: string;
-            position: {
-              latitude: number;
-              longitude: number;
-              timestamp: string;
-            };
-            file: DocumentPicker.DocumentPickerResult;
-          }[] = JSON.parse(storaged);
-          const converted = parsed.map<Incident>((prev, index) => ({
-            id: `${index}`,
-            level: nameToLevel(prev.urgencies),
-            status: Status.PENDING,
-            type: nameToType(prev.type),
-            timestamp: new Date(prev.position.timestamp),
-            description: prev.description,
-            position: {
-              latitude: prev.position.latitude,
-              longitude: prev.position.longitude,
-            },
-            files: prev.file,
-          }));
-
-          setIncidentData(converted);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar estado:", error);
+    const loadReports = async () => {
+      if (context) {
+        await context.fetchReports();
       }
     };
-    loadState();
-  }, []);
+    loadReports();
+  }, [context]);
+
+  useEffect(() => {
+    if (context?.reports) {
+      const converted = context.reports.map<Incident>((report, index) => ({
+        id: report.id || `${index}`,
+        level: nameToLevel(report.attributes.urgency),
+        status: report.attributes.denunciation_status as Status,
+        type: report.attributes.type,
+        timestamp: new Date(report.attributes.report_time),
+        description: report.attributes.description,
+        position: {
+          latitude: report.attributes.position?.coordinates[1] || 0,
+          longitude: report.attributes.position?.coordinates[0] || 0,
+        },
+        files: {
+          assets:
+            report.attributes.files?.data?.map((file) => ({
+              uri: `${API_URL}${file.attributes.url}`,
+              name: file.attributes.name,
+              mimeType: file.attributes.mime,
+            })) || [],
+          canceled: false,
+        },
+      }));
+      setIncidentData(converted);
+    }
+  }, [context?.reports]);
 
   const filtered = incidentData.filter(
-    (inc) => filterLevel === Level.ALL || inc.level === filterLevel,
+    (inc) => filterLevel === Level.ALL || inc.level === filterLevel
   );
 
   const focusOn = (lat: number, lon: number) => {
@@ -193,7 +198,7 @@ export default function AdminDashboard() {
               {level} (
               {
                 incidentData.filter(
-                  (ic) => level === Level.ALL || ic.level === level,
+                  (ic) => level === Level.ALL || ic.level === level
                 ).length
               }
               )
@@ -276,18 +281,13 @@ export default function AdminDashboard() {
                           )}
                           <Text className="ml-2">{file.name}</Text>
                         </HStack>
-                      ) : null,
+                      ) : null
                     )}
                   </>
                 )}
               </DrawerBody>
               <DrawerFooter>
                 <HStack space="sm">
-                  {/* <Pressable className="flex-1 px-4 py-2 bg-blue-600 rounded-lg"> */}
-                  {/*   <Text className="text-white text-center font-semibold"> */}
-                  {/*     Chat */}
-                  {/*   </Text> */}
-                  {/* </Pressable> */}
                   <Pressable
                     className="flex-1 px-4 py-2 bg-gray-300 rounded-lg"
                     onPress={() => {
