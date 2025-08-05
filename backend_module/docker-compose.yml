@@ -1,0 +1,24 @@
+name: backend-module-db
+
+services:
+  db:
+    container_name: backend-module-db
+    image: postgres:17.4-alpine3.21
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - ${DATABASE_PORT}:5432
+    volumes:
+      - backend-module-postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend-module-network
+    restart: unless-stopped
+
+volumes:
+  backend-module-postgres-data:
+
+networks:
+  backend-module-network:
+    driver: bridge

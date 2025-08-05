@@ -17,7 +17,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
-import { ContextApiApp } from "@/hooks/contexAPI";
+import { ReportsContext } from "@/hooks/context-api";
 import { getPosition } from "@/utils/utils";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
@@ -42,7 +42,7 @@ export default function Page() {
   const [isTextValid, setIsTextValid] = useState(true);
   const [isSelectValidTipo, setIsSelectValidTipo] = useState(true);
   const [isSelectValidUrgencia, setIsSelectValidUrgencia] = useState(true);
-  const context = useContext(ContextApiApp);
+  const context = useContext(ReportsContext);
 
   const handleUpload = async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: "*/*" });

@@ -1,4 +1,4 @@
-import { ContextApiApp } from "@/hooks/contexAPI";
+import { ReportsContext } from "@/hooks/context-api";
 import {
   createAudioDocumentResult,
   getPosition,
@@ -12,7 +12,7 @@ import { Pressable, useWindowDimensions, Vibration } from "react-native";
 export function PanicButton() {
   const dimensions = useWindowDimensions();
   const { width, height } = dimensions;
-  const context = useContext(ContextApiApp);
+  const context = useContext(ReportsContext);
   const [hasPermission, setHasPermission] = useState<boolean>(false);
 
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);

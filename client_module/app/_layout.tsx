@@ -10,8 +10,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
-import { ContexProvider } from "@/hooks/contexAPI";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { ReportsContextProvider } from "@/hooks/context-api";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -27,14 +27,14 @@ export default function RootLayout() {
   return (
     <GluestackUIProvider mode="light">
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <ContexProvider>
+        <ReportsContextProvider>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(page)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />
-        </ContexProvider>
+        </ReportsContextProvider>
       </ThemeProvider>
     </GluestackUIProvider>
   );

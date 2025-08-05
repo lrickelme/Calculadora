@@ -1,6 +1,9 @@
+import api from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 import * as DocumentPicker from "expo-document-picker";
 import { EncodingType, StorageAccessFramework } from "expo-file-system";
+
 import React, { createContext, useEffect, useMemo, useState } from "react";
 
 interface IPosition {
@@ -17,17 +20,17 @@ interface IReport {
   file: DocumentPicker.DocumentPickerResult | null;
 }
 
-interface ContextApiProps {
+interface ReportsContextProps {
   addReport: (report: IReport) => void;
 }
 
-export const ContextApiApp = createContext<ContextApiProps | undefined>(
+export const ReportsContext = createContext<ReportsContextProps | undefined>(
   undefined,
 );
 
-export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ReportsContextProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [reports, setReports] = useState<IReport[]>([]);
   const [directoryUri, setDirectoryUri] = useState<string | null>(null);
   const fileName = "reports.json";
@@ -110,8 +113,29 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const sendAndClearState = async () => {
+    await Promise.all(
+      reports.map(
+        async (report: IReport) =>
+          await api.post("/reports", {
+            type: report.type,
+            description: report.description,
+            urgency: report.urgencies,
+          }),
+      ),
+    );
+
+    setReports([]);
+  };
+
   useEffect(() => {
     loadState();
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected) sendAndClearState();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -132,6 +156,6 @@ export const ContexProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   return (
-    <ContextApiApp.Provider value={value}>{children}</ContextApiApp.Provider>
+    <ReportsContext.Provider value={value}>{children}</ReportsContext.Provider>
   );
 };
